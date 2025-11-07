@@ -1,1 +1,1 @@
-from autoencoder import *
+from .autoencoder import *

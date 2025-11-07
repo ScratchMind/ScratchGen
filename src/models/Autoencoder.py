@@ -19,6 +19,7 @@ class Autoencoder(nn.Module):
         self.decoder = Decoder(latent_space_size, hidden4_size, hidden3_size, hidden2_size, hidden1_size, input_size)
 
     def forward(self, X):
+        X = X.view(X.size(0), -1) 
         z = self.encoder(X)
         reconstruction = self.decoder(z)
         return reconstruction

@@ -1,0 +1,21 @@
+device: 'cpu'
+batch_size: 64
+learning_rate: 0.001
+num_epochs: 5
+weight_decay: 1e-4
+target_ssim: 0.95
+target_psnr: 30
+
+input_size: 1024
+hidden1_size: 512
+hidden2_size: 256
+hidden3_size: 128
+hidden4_size: 64
+latent_space_size: 32
+
+criterion: 'MSELoss'
+optimizer: 'Adam'
+update_freq: 10
+dataset: 'MNIST'
+shuffle_train: True
+num_workers: 0

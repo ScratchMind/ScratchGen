@@ -284,7 +284,7 @@ We introduce a practical estimator of lower bound and it's derivatives wr.r.t th
 
 Assume approximate posterior in form $q_\phi(z|x)$, can also be applied to $q_\phi(z)$ (x not conditioned)
 
-Under certain conditions (later), for a chosen approximate posterior $q_\phi(z|x)$, we can reparameterize the random variable  $\tilde z ~ q_\phi(z|x)$ using a different transformation $g_\phi (\epsilon, x)$ of an auxillary noise variable $\epsilon$
+Under certain conditions (later), for a chosen approximate posterior $q_\phi(z|x)$, we can reparameterize the random variable  $\tilde z$ ~ $q_\phi(z|x)$ using a different transformation $g_\phi (\epsilon, x)$ of an auxillary noise variable $\epsilon$
 
 This means, randomness is moved to $\epsilon$ which does not depend on $\phi$, thereby making z a deterministic function of $(\epsilon, x, \phi)$
 
@@ -435,7 +435,7 @@ $$
 
 In VAEs:
 - encoder outputs: $\mu_\phi(x) , \sigma_phi (x)$
-- sampling done via: $z = \mu_\phi(x) + \sigma_phi (x) \epsilon$
+- sampling done via: $z = \mu_\phi (x) + \sigma_\phi (x) \epsilon$
 - gradients w.r.t $\phi$ pass through z
 
 This makes ELBO optimization practical

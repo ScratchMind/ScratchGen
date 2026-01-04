@@ -80,3 +80,30 @@ def download_CIFAR10():
     )
     
     return train_dataset, test_dataset
+
+# ====================================================================================================================
+# Model Specific Dataset and Transforms
+
+##VAE
+
+def download_MNIST_VAE():
+    transform = transforms.Compose([
+        transforms.ToTensor(),  # scales to [0, 1]
+    ])
+
+    train_dataset = torchvision.datasets.MNIST(
+        root='../data/train',
+        train=True,
+        download=True,
+        transform=transform
+    )
+
+    test_dataset = torchvision.datasets.MNIST(
+        root='../data/test',
+        train=False,
+        download=True,
+        transform=transform
+    )
+
+    return train_dataset, test_dataset
+

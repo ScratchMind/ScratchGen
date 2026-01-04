@@ -15,7 +15,7 @@ def create_DataLoaders(train_dataset, test_dataset, batch_size, shuffle_train, n
         test_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=2,
+        num_workers=num_workers,
         pin_memory=True
     )
     

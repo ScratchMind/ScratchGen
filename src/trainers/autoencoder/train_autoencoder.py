@@ -3,7 +3,7 @@ import torch.nn as nn
 import time
 
 from .train_autencoder_epoch import train_epoch
-from ..evaluators import evaluate
+from src.evaluators.evaluate_autoencoder import evaluate
 
 def train_autoencoder(num_epochs, model, train_dataloader, test_dataloader, criterion, optimizer, target_psnr, target_ssim, device, update_freq):
     train_losses = []

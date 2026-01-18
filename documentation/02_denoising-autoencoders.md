@@ -50,7 +50,7 @@ More formally,
 
 ### Additional Specific Criterion:
 
-- Robustness to partial destruction of the input (partially destroyed input should yield almost the same representation.
+- Robustness to partial destruction of the input (partially destroyed input should yield almost the same representation).
 
 **Motivation:**
 
@@ -94,9 +94,9 @@ $D_n = \{ (x^{(1)}, t^{(1)}), . . . , (x^{(n)}, t^{(n)}) \}$ is an i.i.d sample 
 
 ### Basic Autoencoder
 
-An autoencoder takes input vector $x \isin [0, 1]^d$ and first it maps it to a hidden representation $y \isin [0, 1]^d$ through deterministic mapping $y = f_\theta(x) = s(Wx + b)$ parameterized by $\theta = \{W, b\}$ where $W$ is a  $d' \times d$ matrix and $b$ is bias vector.
+An autoencoder takes input vector $x \in [0, 1]^d$ and first it maps it to a hidden representation $y \in [0, 1]^d$ through deterministic mapping $y = f_\theta(x) = s(Wx + b)$ parameterized by $\theta = \{W, b\}$ where $W$ is a  $d' \times d$ matrix and $b$ is bias vector.
 
-This latent representation is then mapped back to a "reconstructed" vector $z \isin [0, 1]^d$ in input space $z = g_{\theta'} (y) = s(W' y + b')$ with $\theta' = \{W', b'\}$
+This latent representation is then mapped back to a "reconstructed" vector $z \in [0, 1]^d$ in input space $z = g_{\theta'} (y) = s(W' y + b')$ with $\theta' = \{W', b'\}$
 
 Optional Constraint: $W' = W^T$ ==> autoencoder has tied weights.
 
@@ -109,7 +109,11 @@ $$
 This is then trained to minimize *average reconstruction error*:
 
 $$
-\theta^* \, ,  \, \theta'^* = \argmin\limits_{\theta , \theta'} \frac {1}{n} \sum_{i=1}^n L(x^{(i)}, z^{(i)} ) =   \argmin\limits_{\theta , \theta'} \frac {1}{n} \sum_{i=1}^n L(x^{(i)}, g_{\theta'}(f_\theta(x^{(i)})) )
+\theta^*,\,\theta'^*
+= \underset{\theta,\theta'}{\operatorname{argmin}}
+    \frac{1}{n}\sum_{i=1}^n L(x^{(i)}, z^{(i)})
+= \underset{\theta,\theta'}{\operatorname{argmin}}
+    \frac{1}{n}\sum_{i=1}^n L\bigl(x^{(i)}, g_{\theta'}(f_\theta(x^{(i)}))\bigr)
 $$
 
 where L is loss function such as traditional squared error $L(x, z) = ||x - z||^2$
@@ -124,8 +128,12 @@ So if input x is binary, $\mathbb{L}_{\mathbb {H}} (x, z)$ is negative log likel
 Thus,
 
 $$
-\theta^* \, ,  \, \theta'^* = \argmin\limits_{\theta , \theta'} \mathbb{E}_{q^0(X)} [\mathbb{L}_{\mathbb{H}} (X, g_{\theta'}(f_\theta(X)))]
+\theta^*,\,\theta'^*
+= \underset{\theta,\theta'}{\operatorname{argmin}}\;
+  \mathbb{E}_{q^0(X)}
+  \bigl[\mathcal{L}_{\mathbb{H}}\bigl(X, g_{\theta'}(f_\theta(X))\bigr)\bigr]
 $$
+
 
 where $q^0 (X)$ denotes empirical distribution associated to our inputs. 
 
@@ -155,6 +163,7 @@ Similarly to before, the parameters are trained to minimize the average reconstr
 
 
 Let's define joint distribution
+
 $$
 q^0 (X, \tilde X, Y) = q^0(X) q_\mathcal{D} (\tilde X | X) \delta_{f_\theta(\tilde X)} (Y)
 $$
@@ -166,8 +175,11 @@ Thus Y is a deterministic function of $\tilde X$.
 The objective function then becomes,
 
 $$
-\argmin\limits_{\theta , \theta'} \mathbb{E}_{q^0(X, \tilde X)} [\mathbb{L}_{\mathbb{H}} (X, g_{\theta'} (f_\theta(\tilde X)))]
+\underset{\theta,\theta'}{\operatorname{argmin}}\;
+\mathbb{E}_{q^0(X,\tilde X)}
+\bigl[\mathcal{L}_{\mathbb{H}}\bigl(X, g_{\theta'}(f_\theta(\tilde X))\bigr)\bigr]
 $$
+
 
 So from SGD pov, in addition to picking up an input sample from training set, we also produce a random corrupted version of it and take step towards reconstructing the uncorrupted version from the corrupted version.
 
@@ -191,13 +203,7 @@ Denoising Autoencoder involves learning to recover a clean input from a corrupte
 
 This idea was introduced much earlier in 1987, as an alternative to Hopfield models.
 
-Our objective though, is not *creating a competitive denoising algorithm*, but to **investigate explicit robustness to corrupting noise as a novel criterion guiling the learning of suitable intermediate representations to initialize a deep network**
-
-Thus, out **corruption + denoising** is applied not only to input but also recursively to intermediate representations.
-
-$$
-Original \, Input --> Corrupt --> Denoise --> Send \, to \, next \, layer --> Corrupt --> Denoise --> Send \, to \, next \, layer --> and \, so \, on.
-$$
+Our objective though, is not *creating a competitive denoising algorithm*, but to **investigate explicit robustness to corrupting noise as a novel criterion guiding the learning of suitable intermediate representations to initialize a deep network**
 
 #### Train Time Augmentation
 
@@ -235,6 +241,8 @@ Alternative Perspectives on the algorithm
 
 ### Manifold Learning
 
+> Manifold : It is the region of high probability under the data distribution, not a sharply defined space.
+
 The process of mapping a corrupted example to an uncorrupted one can be visualized with a low-dimensional manifold near which the data concentrate.
 
 ![manifold](images/02_denoising-autoencoders/manifold.png)
@@ -253,6 +261,8 @@ The intermediate representation $Y = f(X)$ can be interpreted as a coordinate sy
 
 More generally, Y can be seen as a representation of X which is well suited to capture main variations in the data.
 
+> In the denoising autoencoder, the “manifold” is an informal way of referring to regions of high probability under the data distribution; the model does not represent or learn a manifold explicitly, but learns a conditional mapping that sends corrupted, low-probability inputs toward higher-probability ones.
+
 ### Generative Model 
 
 Consider the generative model 
@@ -262,7 +272,7 @@ $p(X, \tilde X, Y) = p(Y)p(X|Y)p(\tilde X | X)$
 where 
 - $p(X|Y) = \mathcal{B}_{s(W'Y + b')}$
 - $p(\tilde X | X) = q_\mathcal{D} (\tilde X | X)$.
-- $p(Y)$ is a uniform prior over $Y \isin [0,1]^d$
+- $p(Y)$ is a uniform prior over $Y \in [0,1]^d$
 
 This defines a generative model with parameter set $\theta' = \{ W', b'\}$
 
@@ -299,8 +309,8 @@ We can thus write $log \, p(\tilde X) = max_{q^\star} \mathcal{L} (q^\star, \til
 
 $$
 \begin{aligned}
-\mathcal{H} & =\max _{\theta^{\prime}}\left\{\mathbb{E}_{q^0(\widetilde{X})}\left[\max _{q^{\star}} \mathcal{L}\left(q^{\star}, \widetilde{X}\right)\right]\right\} \\
-& =\max _{\theta^{\prime}, q^{\star}}\left\{\mathbb{E}_{q^0(\widetilde{X})}\left[\mathcal{L}\left(q^{\star}, \widetilde{X}\right)\right]\right\}
+\mathcal{H} & =\max _{\theta^{\prime}}\left\lbrace\mathbb{E}_{q^0(\widetilde{X})}\left[\max _{q^{\star}} \mathcal{L}\left(q^{\star}, \widetilde{X}\right)\right]\right\rbrace \\
+& =\max _{\theta^{\prime}, q^{\star}}\left\lbrace\mathbb{E}_{q^0(\widetilde{X})}\left[\mathcal{L}\left(q^{\star}, \widetilde{X}\right)\right]\right\rbrace
 \end{aligned}
 $$
 
@@ -309,14 +319,14 @@ where we moved maximization outside expectation because an unconstrained $q^\sta
 Now, if we replace maximization over an unconstrained $q^\star$ by the maximization over parameters $\theta$ of our $q^0$ (appears in $f_\theta$ that maps x to y), we get the lower bound on $\mathcal{H}$
 
 $$
-\mathcal{H}: \mathcal{H} \geq \max _{\theta^{\prime}, \theta}\left\{\mathbb{E}_{q^0}(\widetilde{X})\left[\mathcal{L}\left(q^0, \widetilde{X}\right)\right]\right\}
+\mathcal{H}: \mathcal{H} \geq \max _{\theta^{\prime}, \theta}\left\lbrace\mathbb{E}_{q^0}(\widetilde{X})\left[\mathcal{L}\left(q^0, \widetilde{X}\right)\right]\right\rbrace
 $$
 
 Maximizing on this lower bound, we find:
 
 $$
 \begin{aligned}
-& \underset{\theta, \theta^{\prime}}{\arg \max }\left\{\mathbb{E}_{q^0(\widetilde{X})}\left[\mathcal{L}\left(q^0, \widetilde{X}\right)\right]\right\} \\
+& \underset{\theta, \theta^{\prime}}{\arg \max }\left\lbrace\mathbb{E}_{q^0(\widetilde{X})}\left[\mathcal{L}\left(q^0, \widetilde{X}\right)\right]\right\rbrace \\
 = & \underset{\theta, \theta^{\prime}}{\arg \max } \mathbb{E}_{q^0(X, \widetilde{X}, Y)}\left[\log \frac{p(X, \widetilde{X}, Y)}{q^0(X, Y \mid \widetilde{X})}\right] \\
 = & \underset{\theta, \theta^{\prime}}{\arg \max } \mathbb{E}_{q^0(X, \widetilde{X}, Y)}[\log p(X, \widetilde{X}, Y)] \\
 & \quad+\mathbb{E}_{q^0(\widetilde{X})}\left[\mathbf{H}\left[q^0(X, Y \mid \widetilde{X})\right]\right] \\

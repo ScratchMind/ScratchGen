@@ -33,12 +33,16 @@ This paper introduces: **Penalty term**
 
 When combined with reconstruction error or likelihood criterion:
 
-- Invariance obtained in the directions that make sense in the context of the given training data
-- Variations present in the data should also be captured in the learned representations, but the other directions may be contracted in the learned representation
+- Invariance obtained in the directions that make sense in the context of the given training data (Robustness emerges only along input directions relevant to your training examples.)
+- Variations present in the data should also be captured in the learned representations, but the other directions may be contracted in the learned representation (Real data variations get preserved in the features, while irrelevant directions get squished.)
 
 ## How to extract robust features?
 
 To encourage robustness of the representation $f(x)$ obtained for training input $x$, we propose to **penalize  it's sensitivity** to that input ==> **Frobenius Norm of the Jacobian $J_f(x)$ of the non-linear mapping.
+
+```
+To make features from $f(x)$ robust for training inputs x, penalize how sensitive f is to small input changes via Frobenius Norm
+```
 
 Formally,
 
@@ -52,7 +56,7 @@ Penalizing $||J_f||^2_F$ encourages
 
 - mapping of the feature space to be **contractive** in the neighborhood of the training data.
 
-The flatness induced by having low valued first derivatives will imply an **invariance** or **robustness** for small variations of the input.
+The flatness induced by having low valued first derivatives will imply an **invariance** or **robustness** for small variations of the input. (Small derivatives create a "flat" mapping near training points, making it contractive: tiny Δx yields tiny Δh.)
 
 Thus **invariance** <==> **insensitivity** <==> **robustness** <==> **flatness** <==> **contraction**
 
@@ -180,6 +184,12 @@ $$
 
 With **Sigmoid**, Contraction and Robustness can also be achieved by driving the hidden units to their saturated regime.
 
+```
+For linear encoders (no activation), Jacobian norm equals L2 weight decay: small weights force contraction.
+
+With sigmoid, saturation (flat tails) also shrinks derivatives, enabling contraction without tiny weights.
+```
+
 ### Relationship with Sparse Auto-Encoders
 
 Any AE that encourages sparse representations aim at having
@@ -188,6 +198,12 @@ Any AE that encourages sparse representations aim at having
 - They must have been computed in the **left** saturated part of the sigmoid non-linearity which is almost flat, with a tiny first derivative.
 
 Thus SAE that outputs many close-to-zero features are likely to correspond  to a **highly contractive mapping** even though contraction/robustness is not explicitly encouraged via learning criterion.
+
+```
+Sparsity pushes many hidden units near zero, into sigmoid's flat left tail (tiny slope).
+
+This implicitly contracts the mapping, mimicking CAE without explicit penalty.
+```
 
 ### Relationship with Denoising Autoencoder
 
@@ -206,11 +222,23 @@ Since we only use *encoder* part for classification, robustness of extracted fea
 - 
 > Analytic approximation for DAE's stochastic robustness criterion can be obtained in limit of very small additive Gaussian noise. This yields, not surprisingly, a term in $|| J_{gof}(x)||_F^2$ (Jacobian reconstruction) rather than the $|| J_f(x)||_F^2$ (Jacobian of representation) of CAEs.
 
+```
+DAE builds robustness to corruption in reconstruction g(f(x)), indirectly aiding features
+
+CAE directly penalizes encoder sensitivity f(x), better for feature extraction
+
+DAE: stochastic via corruptions
+
+CAE: analytic via derivatives at clean points.
+
+Small-noise DAE limit penalizes full Jacobian $J_{gof}$ not just $J_f$
+```
+
 #### Computation Considerations
 
 In case of sigmoid non-linearity, penalty on Jacobian norm has the following simple expression:
 $$
-$|| J_f(x)||_F^2$ = \sum_{i=1}^{d_h} ( h_i (1 - h_i))^2 sum_{j=1}^{d_x} W_{ij}^2
+|| J_f(x)||_F^2 = \sum_{i=1}^{d_h} ( h_i (1 - h_i))^2 sum_{j=1}^{d_x} W_{ij}^2
 $$
 
 Computing this penalty (or its gradient) is similar and has about same cost as computing the overall construction error. Complexity equals $O(d_x \times d_h)$
@@ -235,7 +263,7 @@ All gave out an encoder, later finetuned with MLP head for classification on **C
 ### Classification Performance
 
 - 1 hidden layer of 1000 units, initialized with each of unsupervised algos under consideration
-- Local Contraction Measure (average $||J_f||_F$ on the pretrained model strongly correlates with the final classification error.
+- Local Contraction Measure (average $||J_f||_F$ on the pretrained model strongly correlates with the final classification error.)
 
 CAE tries to explicitly minimize above measure and hence performs best.
 
@@ -249,6 +277,17 @@ CAE tries to explicitly minimize above measure and hence performs best.
    -  the amount of contraction is generally not the same in all directions.
 
 This can be examined by SVD of $J_f$
+
+```
+J_f holds directional info, contraction varies by direction (not uniform)
+
+J_f = U \sum V^T , diagonal Σ gives singular values σ_i
+
+- σ_i < 1: Contraction in that input direction (robustness).
+- σ_i > 1: Expansion (sensitivity).
+
+CAE pushes most σ_i < 1 near training data.
+```
 
 #### What happens further away: contraction curves. 
 
@@ -264,6 +303,16 @@ In the limit where the variation in the input space is infinitesimal, this corre
 
 - For any encoding function $f$, we can measure average contraction ratio for pairs of points, one of which $x_0$ is picked from validation set and the other $x_1$ is randomly generated on a sphere of radius r centered on $x_0$ in input space. 
 
+```
+Isotropic contraction ratio: For points x0 (validation set) and x1 (on sphere radius r around x0)
+
+ratio = feature-space distance / input-space distance.
+
+As r -> 0, matches Jacobian
+
+Average over pairs shows CAE's behavior.
+```
+
 ### Local Space Contraction
 
 From geometrical POV,
@@ -272,10 +321,20 @@ From geometrical POV,
 
 Thus this contraction happens with the proposed penalty, but much less without it
 
-For all models except CAE and DAE-gaussian
+```
+Robust features = input space "squished" into feature space, especially near data points (not global scaling, which is useless).
+```
+
+For all models except CAE and DAE-gaussian: Little/no contraction.
 
 - For DAE-g, the contraction ratio decreases (towards more contraction) as we move away from training samples (this is due to more saturation, and was expected).
-- For CAE, the contraction ratio initially increases, up to the point where the effect of saturation takes over (the bump occurs at about the maximum distance between two training examples).
+- For CAE, the contraction ratio initially increases, up to the point where the effect of saturation takes over (the bump occurs at about the maximum distance between two training examples). 
+
+```
+DAE-Gaussian: Ratio drops further out (saturation effect).
+
+CAE: Ratio starts low (contracts), rises to ~1 (along data variations), peaks near max training-example distance, then drops (saturation).
+```
 
 This can also be thought of the case where the training examples congregate near a low-dimensional manifold. The variations in data (translation/rotation) correspond to local dimensions along the manifold,  while the variations that are small or rare in the data correspond to the directions orthogonal to the manifold.
 
@@ -298,6 +357,16 @@ This contraction penalty thus helps the learner carve a kind of mountain support
 
 What we would like is for these ridges to correspond to some directions of variation present in the data, associated with underlying factors of variation.
 
+```
+Data clusters near low-D manifold:
+
+Manifold-tangent directions (e.g., digit stroke/pose changes): Weak contraction (ratio ~1, large σ_i) — reconstruction needs them to distinguish neighbors.
+
+Orthogonal directions (rare/small variations, noise): Strong contraction (low ratio, small σ_i)—density drops fast.
+
+Analogy: Training examples as villages on mountain ridges. Penalty flattens valleys off-ridges (ignore noise paths); reconstruction keeps ridges walkable (preserve real changes like tilts/lighting). Ridges = data factors of variation.
+```
+
 #### How far do these ridges extend around each training example and how flat are they? 
 
 This can be visualized comparatively with the contraction ratio for different distances from the training examples.
@@ -310,6 +379,16 @@ This can be visualized comparatively with the contraction ratio for different di
 - The number of large singular values should reveal the dimensionality of these ridges, i.e., of that manifold near which examples concentrate. 
 
  The CAE by far does the best job at representing the data variations near a lower dimensional manifold, and the DAE is second best, while ordinary auto-encoders (regularized or not) do not succeed at all in this respect.
+
+```
+Visualize via contraction ratio vs. distance from examples:
+
+- Different features (hidden units) form ridges in varied directions.
+
+- Ridge dimensionality hints at local manifold dimension.
+  - Singular value spectrum reveals geometry (# large σ_i = ridge dim).
+  - CAE best captures low-D manifold near data; DAE second; plain AEs fail.
+```
 
 #### What happens when we stack a CAE on top of another one, to build a deeper encoder? 
 
